@@ -1,0 +1,64 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'MyUsualBase'
+            keyPassword '2219sanqk'
+            storeFile file('C:/Users/azubo_000/.android/zome.jks')
+            storePassword '2219sanqks'
+        }
+    }
+    compileSdkVersion 24
+    buildToolsVersion "23.0.2"
+    defaultConfig {
+        applicationId "imagemanipuilations.zome.android.com"
+        minSdkVersion 15
+        targetSdkVersion 23
+        signingConfig signingConfigs.config
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+    productFlavors {
+    }
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile project(':openCVLibrary310')
+    compile 'com.android.support:support-v4:24.0.0'
+    compile 'com.android.support:support-v13:24.0.0'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.1.0' + '-1.2.2'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '3.0.2' + '-1.2.2'
+    compile 'org.bytedeco:javacpp:1.2.2'
+    compile 'org.bytedeco:javacv:1.2'
+    //compile 'org.bytedeco:javacv:1.2'
+    //, classifier: 'andoid-arm'
+    /*
+                     compile 'org.bytedeco:javacpp:1.2.2'
+                     compile 'org.bytedeco:javacv:1.2'
+                     compile 'org.bytedeco:javacpp-presets:1.2'
+                     //compile files('libs/ffmpeg-android-arm.jar')
+                     //compile files('libs/javacpp.jar')
+                     //compile files('libs/javacv.jar')
+                     //compile files('libs/opencv-android-arm.jar')
+                     compile 'org.bytedeco.javacpp-presets:opencv:3.1.0-1.2'
+                     compile 'org.bytedeco.javacpp-presets:ffmpeg:3.0.2-1.2'
+                     compile 'org.bytedeco.javacpp-presets:videoinput:0.200-1.2'
+                     compile 'org.bytedeco.javacpp-presets:flycapture:2.9.3.43-1.2'
+                     */
+    //compile 'com.github.hoary.ffmpeg:FFmpeg-android-arm:2.0.1.1'
+}
+configurations {
+    all*.exclude group: 'org.bytedeco', module: 'javacpp-presets'
+}

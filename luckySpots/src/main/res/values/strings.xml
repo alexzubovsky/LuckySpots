@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">Lucky Spots</string>
+    <string name="please_close"><![CDATA[This application could not work if access to the camera is not granted. Please click OK to clise application, then open System Settings->apps and select application and change Permissions]]></string>
+    <string name="OK">OK</string>
+    <string name="histogram">Histogram</string>
+    <string name="no_processing">No processing</string>
+    <string name="detect_by_area">Integrate frames by color in area</string>
+    <!--string name="absolute_weight">Absolute Weight</string-->
+    <string name="mask_spots">Mask spots with less color level</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+
+    <!--string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string-->
+    <string-array name="pref_mode_list_titles">
+        <!--item>Mask spots by color level</item>
+        <item>Integrate frames by color level in detection area</item>
+        <item>No pre-processing</item-->
+    </string-array>
+    <string-array name="pref_mode_list_values">
+        <!--item>0</item>
+        <item>1</item>
+        <item>2</item-->
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+
+    <!-- Example settings for Notifications -->
+
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="mode">Mode</string>
+    <string name="saving_to">Saving Storage</string>
+    <string name="help">Help</string>
+    <string name="MASK_DETECTION_CHANNEL">MASK_DETECTION_CHANNEL</string>
+    <string name="CHECK_BOX_HISTOGRAM">CHECK_BOX_HISTOGRAM</string>
+    <string name="THRESHOLD_SAVING_PATH_PICTURE">THRESHOLD_SAVING_PATH_PICTURE</string>
+    <string name="THRESHOLD_SAVING_PATH_VIDEO">THRESHOLD_SAVING_PATH_VIDEO</string>
+    <string name="CURRENT_RESOLUTION">CURRENT_RESOLUTION</string>
+    <string name="mask_detection_channel">Mask detection channel</string>
+    <string name="VIEW_MODE_AS_STRING">VIEW_MODE_AS_STRING</string>
+    <string name="THRESHOLD_WINDOW_INTEGRATION_DEEP">AREA_INTEGRATION_DEEP</string>
+    <string name="THRESHOLD_SPOT_ACCUMULATION_WEIGHT">SPOT_ACCUMULATION_WEIGHT</string>
+    <string name="pref_title_help">Help</string>
+
+    <string name="title_template_step">Lucky Spots Help: Screen <xliff:g id="step_number">%1$d</xliff:g></string>
+    <string name="action_next">Next</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_finish">Finish</string>
+
+    <item name="action_next" type="id">Next</item>
+    <item name="action_previous" type="id">Previous</item>
+    <string-array name="help_texts">
+        <item><![CDATA[When you touch screen the \"On Screen Controls\" become visible. On the top left there is a \"Menu\" button. Bellow it radio - THE buttons to select modes supported by the application.
+Here, the selected mode is \"Mask Spots…\". It works in the following way:\n
+The matrix of the color pixels in the area inside of the red square used to create individual matrix for every color channel.
+Then, masking matrix created which is a copy of the matrix of the color channel selected in the bottom\'s slider (red). If pixel\'s red level (in this case) is less then threshold value, then that pixel gets masked (mask value is 0).
+Otherwise, that pixel gets mask value 1.\n
+Then, all other color matrices combined back but using masking matrix. In that procedure, if checkbox \"Mask detection channel\" is checked, then detecting color matrix is not used in the back
+combination at all. Thus, the area inside of the red border will miss detection color. That is shown in the next screen. Otherwise, it is added back and image just has black areas like it shown here.
+        ]]></item>
+        <item><![CDATA[Here checkbox \"Mask detection channel\" is checked, thus the red color component is not added for the pixels inside of the red border.\n
+Also, here the check box \"Histogram"\ is checked, thus the histogram calculated for the full screen is shown]]>
+        </item>
+        <item><![CDATA[If selected mode is \"Integrate frames by area\"then there are two square areas:\n
+The inner area (with the border of the color as selected in the bottom\'s slider - red) used to detect any pixel with the color level more or equal to the threshold\n
+The outer area (always with yellow border) shows result of the integration of the frames who\'s detection area had as minimum one pixel with the color level more or equal to threshold.
+Number of the frames to integrate (used logarithmic weight) is controlled by the value shown on the lower right corner.
+To change the size of either area - touch and drag its right border]]>
+        </item>
+        <item><![CDATA[On version 1.5 added a new functionality:\n
+         1. The slider shown on the bottom  allows to put weight on the intensity of the background color and then subtract that weighted intensity from every pixel in the processed area.
+If it has value 0, then subtraction is not performed. If it has value 100, then full mean value of the particular color for the processed area is subtracted for every pixel.
+If pixel had intensity less then mean value, then its intensity would be set to 0, thus that pixel\'s color would not contribute to final image.\n
+Described operation is not background subtraction but rather brightness dimming.\n
+2. Another new feature - integration now has decimals on percentage and special setup dialog opened when integration value is touched.\n
+3. Shown on the right is a \"Start Recording\" button. When it is touched and recording begins then that button replaced by \"Pause\" button and also \"Stop Recording\" button becomes visible.
+Touching \"Pause\" button besides pausing of the recording also shows \"Start Recording\" button again - to continue recording. Touching \"Stop Recording\" button saves recorded movie and makes it available in \"Gallery\" application
+if such application registered on the device. By default, movies saved under \"video\" subdirectory on the application\'s directory (which could be changed in the application settings).]]>
+        </item>
+    </string-array>
+    <string name="integration_number_picker_done">Done</string>
+    <string name="integration_number_picker_cancel">Cancel</string>
+    <string name="increment_less">-1.0</string>
+    <string name="increment_more">1.0</string>
+    <string name="AccumulationWeightDialog">Accumulation Weight for current Frame</string>
+    <string name="THRESHOLD_SHOWING_PERCENTAGE">SHOWING_WINDOW_PERCENTAGE</string>
+    <string name="MASK_BACKGROUND_VALUE">MASK_BACKGROUND_VALUE</string>
+    <string name="size_of_processing_window">Processing window size (10–100%)</string>
+    <string name="background_weight_value">Weight of mean of background\'s brightness to be subtracted (0–100%)</string>
+    <string name="frames_in_area_integration">Number of frames in Area integration (0–16)</string>
+</resources>

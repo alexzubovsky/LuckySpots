@@ -1,0 +1,47 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
+         dismiss it. -->
+    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
+    <ListPreference
+        android:defaultValue="9"
+        android:entries="@array/pref_mode_list_titles"
+        android:entryValues="@array/pref_mode_list_values"
+        android:key="VIEW_MODE_AS_STRING"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:summary="Spots shown by detecting level of the color selected.&lt;br/&gt;Then that color might be masked (if option is turned on) or not."
+        android:title="Processing Mode"/>
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/CHECK_BOX_HISTOGRAM"
+        android:summary="Adding histogram to the showing preview"
+        android:title="Show Histogram"/>
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/MASK_DETECTION_CHANNEL"
+        android:summary="Spots shown by detecting level of the color selected.&lt;br/&gt;Then that color might be masked (if option is turned on) or not."
+        android:title="Mask detecting color"/>
+    <PreferenceCategory android:title="Integration Settings">
+        <EditTextPreference
+            android:key="@string/THRESHOLD_WINDOW_INTEGRATION_DEEP"
+            android:title="@string/frames_in_area_integration"
+            android:inputType="number"
+            />
+        <EditTextPreference
+            android:key="@string/THRESHOLD_SPOT_ACCUMULATION_WEIGHT"
+            android:title="Weight of frames to integrate with previous (00.01-99.99%)"
+            android:inputType="number|numberDecimal"
+            />
+        <EditTextPreference
+            android:key="@string/MASK_BACKGROUND_VALUE"
+            android:title="@string/background_weight_value"
+            android:inputType="number"
+            />
+        <EditTextPreference
+            android:key="@string/THRESHOLD_SHOWING_PERCENTAGE"
+            android:title="@string/size_of_processing_window"
+            android:inputType="number"
+            />
+    </PreferenceCategory>
+</PreferenceScreen>

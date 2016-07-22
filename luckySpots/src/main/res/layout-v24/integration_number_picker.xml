@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_centerInParent="true"
+             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/integration_deep_chooser"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#00000000">
+            <NumberPicker
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/integration_number_picker_value_0"
+                android:tag="0"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:text="0"
+                android:layout_gravity="right|center_vertical"
+                android:showDividers="beginning"
+                android:touchscreenBlocksFocus="true"/>
+
+            <NumberPicker
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/integration_number_picker_value_1"
+                android:tag="1"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:text="0"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="."
+                android:layout_gravity="bottom"
+                android:textSize="48dp"
+                android:textStyle="bold"/>
+
+            <NumberPicker
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/integration_number_picker_value_2"
+                android:tag="3"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:text="0"/>
+
+            <NumberPicker
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/integration_number_picker_value_3"
+                android:tag="4"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="10dp"
+                android:text="0"
+                android:layout_margin="0dp"/>
+        </LinearLayout>
+        <RelativeLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_marginTop="32dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/integration_number_picker_cancel"
+                android:id="@+id/integration_deep_cancel"
+                android:layout_gravity="left"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/integration_number_picker_done"
+                android:id="@+id/integration_deep_done"
+                android:gravity="center|end|right|center_horizontal|fill"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+
+</FrameLayout>

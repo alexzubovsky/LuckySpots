@@ -1,0 +1,14 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/main_layout"
+                tools:context="imagemanipulations.zome.android.com.luckySpotsActivity">
+
+    <!--org.opencv.android.JavaCameraView-->
+    <imagemanipulations.zome.android.com.OpenCVJavaCameraViewExtension
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:screenOrientation="landscape"
+        android:id="@+id/image_surface_view" />
+</RelativeLayout>

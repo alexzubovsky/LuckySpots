@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="imagemanipulations.zome.android.com"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:versionCode="150"
+          android:versionName="1.50"
+          xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false"/>
+    <uses-sdk
+        android:minSdkVersion="17"
+        android:targetSdkVersion="23"/>
+
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true"/>
+
+    <uses-permission
+        android:name="android.permission.CAMERA"
+        android:required="true"/>
+    <!-- uses-permission android:name="android.permission.CAMERA2" android:required="true"/ -->
+    <!-- uses-permission android:name="android.permission.READ_PHONE_STATE"/ -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="true"/>
+
+    <!--
+uses-feature android:name="android.hardware.camera.front"/>
+    <uses-feature android:name="android.hardware.camera.front.autofocus"/>
+    <uses-feature android:name="android.hardware.camera2"/
+    -->
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:allowBackup="false"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        android:allowClearUserData="true">
+
+        <!-- activity android:configChanges="keyboardHidden|orientation" -->
+        <activity
+            android:name=".luckySpotsActivity"
+            android:configChanges="keyboardHidden"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ThisSettingsActivity" android:label="@string/title_activity_settings">
+        </activity>
+        <activity
+            android:name=".ScreenSlideActivity" android:label="Help">
+            <intent-filter>
+                <action android:name="imagemanipulations.zome.android.com.ScreenSlideActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
