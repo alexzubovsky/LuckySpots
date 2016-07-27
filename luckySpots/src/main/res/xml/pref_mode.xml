@@ -38,6 +38,12 @@
             android:title="@string/background_weight_value"
             android:inputType="number"
             />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/MASK_BACKGROUND_AFTER_MASK"
+            android:title="@string/calc_backgr_after_masking"
+            android:summary="Calculate mean of background after masking, otherwise before"
+            />
         <EditTextPreference
             android:key="@string/THRESHOLD_SHOWING_PERCENTAGE"
             android:title="@string/size_of_processing_window"

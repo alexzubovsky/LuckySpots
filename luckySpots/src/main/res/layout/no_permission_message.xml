@@ -2,18 +2,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:gravity="center">
+              android:layout_height="match_parent"
+              android:gravity="center_vertical|center">
     <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:text="@string/please_close"
-    android:gravity="center"/>
-    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:onClick="closeApplication"
-        android:text="@string/OK"/>
+        android:text="@string/please_close"
+        android:gravity="center"
+        android:layout_margin="10dp"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center_horizontal"
+            android:onClick="closeApplication"
+            android:tag="0"
+            android:text="@string/open_settings"
+            android:layout_marginRight="10dp"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="closeApplication"
+            android:tag="1"
+            android:text="@string/close_and_exit"
+            android:layout_gravity="right|center_horizontal"
+            android:layout_marginLeft="10dp"/>
+
+    </LinearLayout>
 </LinearLayout>

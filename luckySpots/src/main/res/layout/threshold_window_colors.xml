@@ -97,6 +97,8 @@
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/mask_background_control"
+        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="wrap_content">
@@ -115,7 +117,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center_vertical"
             android:id="@+id/seekBarMaskBackground"
             android:background="#0aff0000"
             style="@android:style/Animation.Translucent"/>

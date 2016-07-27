@@ -26,6 +26,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -49,6 +50,7 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.bytedeco.javacpp.avutil;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
 import org.opencv.android.BaseLoaderCallback;
@@ -106,7 +108,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	public static final int VIEW_MODE_THRESHOLD_ZERO = 8;
 	public static final int VIEW_MODE_THRESHOLD_SPOT = 9;
 	//public static final int VIEW_MODE_THRESHOLD_SPOT_AUX = 10;
-	//saving values
+	//setting names not shared with Menu
 	public static final String THRESHOLD_DETECTION_PERCENTAGE	= "THRESHOLD_DETECTION_PERCENTAGE";
 	public static final String THRESHOLD_WINDOW_RED	= "THRESHOLD_WINDOW_RED";
 	public static final String THRESHOLD_WINDOW_GREEN	= "THRESHOLD_WINDOW_GREEN";
@@ -115,15 +117,17 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	public static final String THRESHOLD_WINDOW_GREEN_CHECK	= "THRESHOLD_WINDOW_GREEN_CHECK";
 	public static final String THRESHOLD_WINDOW_BLUE_CHECK	= "THRESHOLD_WINDOW_BLUE_CHECK";
 	//public static final String THRESHOLD_SPOT_VIEW_MODE_ABSOLUTE	= "THRESHOLD_SPOT_VIEW_MODE_ABSOLUTE";
-	public static final String THRESHOLD_SPOT_VIEW_MODE_BY_AREA	= "THRESHOLD_SPOT_VIEW_MODE_BY_AREA";
+	//public static final String THRESHOLD_SPOT_VIEW_MODE_BY_AREA	= "THRESHOLD_SPOT_VIEW_MODE_BY_AREA";
 	public static final String IN_FRAME_ZOOM_VALUE	= "IN_FRAME_ZOOM_VALUE";
 	public static final String IN_FRAME_RESOLUTION	= "IN_FRAME_RESOLUTION";
-
+	private MediaActionSound mSound = null;
+	//setting names s controlled also by Menu and
 	private String VIEW_MODE_VIEW_MODE;
 	private String THRESHOLD_SAVING_PATH_PICTURE;
 	private String THRESHOLD_SAVING_PATH_VIDEO;
 	private String CHECK_BOX_HISTOGRAM;
 	private String MASK_DETECTION_CHANNEL;
+	private String MASK_BACKGROUND_AFTER_MASK;
 	private String CURRENT_RESOLUTION;
 	private String THRESHOLD_SPOT_ACCUMULATION_WEIGHT;
 	private String THRESHOLD_WINDOW_INTEGRATION_DEEP;
@@ -142,9 +146,11 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	private static final int THRESHOLD_STRUCT_INDICATOR_ID = 6;
 	private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
 	private static final int MY_PERMISSIONS_REQUEST_WRITE = 2;
+	private static final int MY_PERMISSIONS_REQUEST_AUDIO = 3;
 	private static final int PERMISSION_REQUEST_REJECTED = -1;
 	private static final int PERMISSION_REQUEST_WAITING = 0;
 	private static final int PERMISSION_REQUEST_GRUNTED = 1;
+	private static final int Build_VERSION_CODES_FOR_BACGROUND_SUBTRACT = Build.VERSION_CODES.KITKAT;//Build.VERSION_CODES.M;
 	private MenuItem mItemPreviewRGBA;
 	private MenuItem mItemPreviewThresholdZero;
 	private MenuItem mItemPreviewThresholdSpot;
@@ -263,33 +269,48 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	}
 
 	private boolean mWriteAccessGrunted = true;
+	private boolean mAudioAccessGrunted = true;
+	private boolean mCameraoAccessGrunted = true;
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
 		switch (requestCode) {
-			case MY_PERMISSIONS_REQUEST_CAMERA: {
+			case MY_PERMISSIONS_REQUEST_CAMERA:
 
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {// If request is cancelled, the result arrays are empty.
-					continueOnCreate();// permission was granted, Do the contacts-related task you need to do.
+					;//continueOnCreate();// permission was granted, Do the contacts-related task you need to do.
 				} else {// permission denied! Disable the functionality that depends on this permission.
+					mCameraoAccessGrunted = false;
 					setContentView(R.layout.no_permission_message);// this thread waiting for the user's response! After the user
 				}
+				mPermissionWaitingCounter--;
 				break;
-			}
-			case MY_PERMISSIONS_REQUEST_WRITE: {
+			case MY_PERMISSIONS_REQUEST_WRITE:
 
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {// If request is cancelled, the result arrays are empty.
 					;// permission was granted, Do the contacts-related task you need to do.
 				} else {
 					mWriteAccessGrunted = false;// permission denied! Disable the functionality that depends on this permission.
 				}
+				mPermissionWaitingCounter--;
+				break;
+			case MY_PERMISSIONS_REQUEST_AUDIO: {
+
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {// If request is cancelled, the result arrays are empty.
+					;// permission was granted, Do the contacts-related task you need to do.
+				} else {
+					mAudioAccessGrunted = false;// permission denied! Disable the functionality that depends on this permission.
+				}
+				mPermissionWaitingCounter--;
 				break;
 			}
 			// other 'case' lines to check for other
 			// permissions this app might request
 		}
+		if(mCameraoAccessGrunted && mPermissionWaitingCounter <=0)
+			continueOnCreate();// permission was granted, Do the contacts-related task you need to do.
 	}
-
+	private int mPermissionWaitingCounter;
 	/**
 	 * Called when the activity is first created.
 	 */
@@ -297,57 +318,62 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	public void onCreate(Bundle savedInstanceStateBundle) {
 		CondLog('i', "called onCreate");
 		super.onCreate(savedInstanceState = savedInstanceStateBundle);
+		mPermissionWaitingCounter = 0;
 		switch (getPermission(Manifest.permission.CAMERA, MY_PERMISSIONS_REQUEST_CAMERA)) {
 			case PERMISSION_REQUEST_REJECTED:// Show an expanation to the user *asynchronously* -- don't block
 				setContentView(R.layout.no_permission_message);// this thread waiting for the user's response! After the user
 				return;// sees the explanation, try again to request the permission.
 			case PERMISSION_REQUEST_WAITING:
-				return;
+				mPermissionWaitingCounter++;
+				break;
 			case PERMISSION_REQUEST_GRUNTED:
-				continueOnCreate();
+				break;
 		}
 		switch (getPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_WRITE)) {
 			case PERMISSION_REQUEST_REJECTED:// Show an expanation to the user *asynchronously* -- don't block
 				mWriteAccessGrunted = false;// this thread waiting for the user's response! After the user
+				break;// No access - continue without wait.
 			case PERMISSION_REQUEST_WAITING:
+				mPermissionWaitingCounter++;
 			case PERMISSION_REQUEST_GRUNTED:
 				break;// sees the explanation, try again to request the permission.
 		}
+		switch (getPermission(Manifest.permission.RECORD_AUDIO, MY_PERMISSIONS_REQUEST_WRITE)) {
+			case PERMISSION_REQUEST_REJECTED:// Show an expanation to the user *asynchronously* -- don't block
+				mAudioAccessGrunted = false;// this thread waiting for the user's response! After the user
+				break;// No access - continue without wait.
+			case PERMISSION_REQUEST_WAITING:
+				mPermissionWaitingCounter++;
+			case PERMISSION_REQUEST_GRUNTED:
+				break;// sees the explanation, try again to request the permission.
+		}
+		if(mPermissionWaitingCounter <= 0)
+			continueOnCreate();
 	}
 	private void initSavablePreferences(){
-		THRESHOLD_SAVING_PATH_PICTURE	= getString(R.string.THRESHOLD_SAVING_PATH_PICTURE);
-		THRESHOLD_SAVING_PATH_VIDEO	= getString(R.string.THRESHOLD_SAVING_PATH_VIDEO);
-		CHECK_BOX_HISTOGRAM	= getString(R.string.CHECK_BOX_HISTOGRAM);
-		MASK_DETECTION_CHANNEL	= getString( R.string.MASK_DETECTION_CHANNEL);
-		CURRENT_RESOLUTION = getString(R.string.CURRENT_RESOLUTION);
-		VIEW_MODE_VIEW_MODE = getString( R.string.VIEW_MODE_AS_STRING/*VIEW_MODE_VIEW_MODE*/);
-		THRESHOLD_WINDOW_INTEGRATION_DEEP	= getString(R.string.THRESHOLD_WINDOW_INTEGRATION_DEEP);
-		THRESHOLD_SPOT_ACCUMULATION_WEIGHT	= getString(R.string.THRESHOLD_SPOT_ACCUMULATION_WEIGHT);
-		THRESHOLD_SHOWING_PERCENTAGE = getString(R.string.THRESHOLD_SHOWING_PERCENTAGE);
-		MASK_BACKGROUND_VALUE = getString(R.string.MASK_BACKGROUND_VALUE);
 		savablePreferences = new ArrayList<>(20);
 		savablePreferences.add(THRESHOLD_DETECTION_PERCENTAGE);
-		savablePreferences.add(THRESHOLD_SHOWING_PERCENTAGE);
-		savablePreferences.add(MASK_BACKGROUND_VALUE);
-		savablePreferences.add(THRESHOLD_WINDOW_INTEGRATION_DEEP);
 		savablePreferences.add(THRESHOLD_WINDOW_RED);
 		savablePreferences.add(THRESHOLD_WINDOW_GREEN);
 		savablePreferences.add(THRESHOLD_WINDOW_BLUE);
 		savablePreferences.add(THRESHOLD_WINDOW_RED_CHECK);
 		savablePreferences.add(THRESHOLD_WINDOW_GREEN_CHECK);
 		savablePreferences.add(THRESHOLD_WINDOW_BLUE_CHECK);
-		savablePreferences.add(THRESHOLD_SPOT_ACCUMULATION_WEIGHT);
-		savablePreferences.add(THRESHOLD_SAVING_PATH_PICTURE);
-		savablePreferences.add(THRESHOLD_SAVING_PATH_VIDEO);
-		//savablePreferences.add(THRESHOLD_SPOT_VIEW_MODE_ABSOLUTE);
-		//savablePreferences.add(THRESHOLD_SPOT_VIEW_MODE_BY_AREA);
-		savablePreferences.add(VIEW_MODE_VIEW_MODE);
 		savablePreferences.add(IN_FRAME_ZOOM_VALUE);
 		savablePreferences.add(IN_FRAME_RESOLUTION);
-		savablePreferences.add(CHECK_BOX_HISTOGRAM);
-		savablePreferences.add(MASK_DETECTION_CHANNEL);
-		savablePreferences.add(CURRENT_RESOLUTION);
-
+		//savablePreferences.add(THRESHOLD_SPOT_VIEW_MODE_ABSOLUTE);
+		//savablePreferences.add(THRESHOLD_SPOT_VIEW_MODE_BY_AREA);
+		savablePreferences.add(THRESHOLD_SHOWING_PERCENTAGE = getString(R.string.THRESHOLD_SHOWING_PERCENTAGE));
+		savablePreferences.add(THRESHOLD_WINDOW_INTEGRATION_DEEP= getString(R.string.THRESHOLD_WINDOW_INTEGRATION_DEEP));
+		savablePreferences.add(THRESHOLD_SPOT_ACCUMULATION_WEIGHT	= getString(R.string.THRESHOLD_SPOT_ACCUMULATION_WEIGHT));
+		savablePreferences.add(THRESHOLD_SAVING_PATH_PICTURE	= getString(R.string.THRESHOLD_SAVING_PATH_PICTURE));
+		savablePreferences.add(THRESHOLD_SAVING_PATH_VIDEO= getString(R.string.THRESHOLD_SAVING_PATH_VIDEO));
+		savablePreferences.add(VIEW_MODE_VIEW_MODE = getString( R.string.VIEW_MODE_AS_STRING/*VIEW_MODE_VIEW_MODE*/));
+		savablePreferences.add(CHECK_BOX_HISTOGRAM= getString(R.string.CHECK_BOX_HISTOGRAM));
+		savablePreferences.add(MASK_DETECTION_CHANNEL= getString( R.string.MASK_DETECTION_CHANNEL));
+		savablePreferences.add(MASK_BACKGROUND_VALUE = getString(R.string.MASK_BACKGROUND_VALUE));
+		savablePreferences.add(CURRENT_RESOLUTION = getString(R.string.CURRENT_RESOLUTION));
+		savablePreferences.add(MASK_BACKGROUND_AFTER_MASK	= getString(R.string.MASK_BACKGROUND_AFTER_MASK));
 	}
 	public void closeApplication() {
 		this.finish();
@@ -502,37 +528,43 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 								booleanChangeDetected = true;
 								mCheckBoxMaskDetectionChannel= tempBoolean;
 							}
+						}else if(preferenceName.equals( MASK_BACKGROUND_AFTER_MASK)) {
+							tempBoolean = savedPreferencesGetBoolean(pref, instState, preferenceName, false);
+							if(tempBoolean != mMaskBackgroundValueAfterMask){
+								booleanChangeDetected = true;
+								mMaskBackgroundValueAfterMask= tempBoolean;
+							}
 						}else if(preferenceName.equals(CURRENT_RESOLUTION)) {
 							tempString = savedPreferencesGetString(pref, instState, preferenceName, "");
 							if(!tempString.equals(mCurrentResolution)){
 								stringChangeDetected = true;
 								mCurrentResolution = tempString;
 							}
-						}else if(preferenceName == VIEW_MODE_VIEW_MODE) {
+						}else if(preferenceName.equals(VIEW_MODE_VIEW_MODE)) {
 							tempInt = Integer.parseInt(savedPreferencesGetString(pref, instState, preferenceName, String.valueOf(VIEW_MODE_THRESHOLD_SPOT)));
 							if(tempInt != viewMode){
 								intChangeDetected = true;
 								viewMode= tempInt;
 							}
-						}else if(preferenceName == THRESHOLD_SPOT_ACCUMULATION_WEIGHT){
+						}else if(preferenceName.equals(THRESHOLD_SPOT_ACCUMULATION_WEIGHT)){
 							tempDouble = setBoundaries(Double.parseDouble(savedPreferencesGetString(pref, instState, preferenceName, "10.00")), THRESHOLD_SPOT_WEIGHT_BOUNDARIES);
 							if(tempDouble != mThresholdSpotAccumulationWeight) {
 								intChangeDetected = true;
 								mThresholdSpotAccumulationWeight = tempDouble;
 							}
-						}else if(preferenceName == THRESHOLD_WINDOW_INTEGRATION_DEEP){
+						}else if(preferenceName.equals(THRESHOLD_WINDOW_INTEGRATION_DEEP)){
 							tempInt = setBoundaries(Integer.parseInt(savedPreferencesGetString(pref, instState, preferenceName, "3")), THRESHOLD_INTEGRATION_BOUNDARIES);
 							if(tempInt != mThresholdIntegrationDeep) {
 								intChangeDetected = true;
 								mThresholdIntegrationDeep = tempInt;
 							}
-						}else if(preferenceName == THRESHOLD_SHOWING_PERCENTAGE){
+						}else if(preferenceName.equals(THRESHOLD_SHOWING_PERCENTAGE)){
 							tempInt = setBoundaries(Integer.parseInt(savedPreferencesGetString(pref, instState, preferenceName, "0")), THRESHOLD_SHOWING_PERCENTAGE_BOUNDARIES);
 							if(tempInt != mThresholdShowingPercentageSize) {
 								intChangeDetected = true;
 								mThresholdShowingPercentageSize = tempInt;
 							}
-						}else if(preferenceName == MASK_BACKGROUND_VALUE){
+						}else if(preferenceName.equals(MASK_BACKGROUND_VALUE)){
 							tempInt = setBoundaries(0, Integer.parseInt(savedPreferencesGetString(pref, instState, preferenceName, "0")), 100);
 							if(tempInt != mMaskBackgroundValue) {
 								intChangeDetected = true;
@@ -544,25 +576,27 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 						String defaultString = null;
 						Boolean defaultBoolean = null;
 						Integer defaultInteger = null;
-						if (preferenceName == THRESHOLD_SAVING_PATH_PICTURE)
+						if (preferenceName.equals(THRESHOLD_SAVING_PATH_PICTURE))
 							defaultString = mDirectoryPathPicture;
-						else if(preferenceName == THRESHOLD_SAVING_PATH_VIDEO)
+						else if(preferenceName.equals(THRESHOLD_SAVING_PATH_VIDEO))
 							defaultString  = mDirectoryPathVideo;
-						else if(preferenceName == CHECK_BOX_HISTOGRAM)
+						else if(preferenceName.equals(CHECK_BOX_HISTOGRAM))
 							defaultBoolean = mCheckBoxHistogram;
-						else if(preferenceName == MASK_DETECTION_CHANNEL)
+						else if(preferenceName.equals(MASK_DETECTION_CHANNEL))
 							defaultBoolean = mCheckBoxMaskDetectionChannel;
-						else if(preferenceName == CURRENT_RESOLUTION)
+						else if(preferenceName.equals(MASK_BACKGROUND_AFTER_MASK))
+							defaultBoolean = mMaskBackgroundValueAfterMask;
+						else if(preferenceName.equals(CURRENT_RESOLUTION))
 							defaultString = mCurrentResolution;
-						else if(preferenceName == VIEW_MODE_VIEW_MODE)
+						else if(preferenceName.equals(VIEW_MODE_VIEW_MODE))
 							defaultString = String.valueOf(viewMode);
-						else if(preferenceName == THRESHOLD_SPOT_ACCUMULATION_WEIGHT)
+						else if(preferenceName.equals(THRESHOLD_SPOT_ACCUMULATION_WEIGHT))
 							defaultString = String.valueOf(mThresholdSpotAccumulationWeight);
-						else if(preferenceName == THRESHOLD_WINDOW_INTEGRATION_DEEP)
+						else if(preferenceName.equals(THRESHOLD_WINDOW_INTEGRATION_DEEP))
 							defaultString = String.valueOf(mThresholdIntegrationDeep);
-						else if(preferenceName == THRESHOLD_SHOWING_PERCENTAGE)
+						else if(preferenceName.equals(THRESHOLD_SHOWING_PERCENTAGE))
 							defaultString = String.valueOf(mThresholdShowingPercentageSize);
-						else if(preferenceName == MASK_BACKGROUND_VALUE)
+						else if(preferenceName.equals(MASK_BACKGROUND_VALUE))
 							defaultString = String.valueOf(mMaskBackgroundValue);
 						if(defaultString == null && defaultBoolean==null && defaultInteger==null)
 							throw new RuntimeException(noSupportForPreferenceName(preferenceName));
@@ -597,7 +631,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 			tempInt = pref==null ? instState.getInt(name, defaultValue) : pref.getInt(name, defaultValue);
 		}catch(RuntimeException e) {
 			String defaultString = String.valueOf(defaultValue);
-			tempInt = new Integer(pref==null ? instState.getString(name, defaultString) : pref.getString(name, defaultString));
+			tempInt = Integer.valueOf(pref==null ? instState.getString(name, defaultString) : pref.getString(name, defaultString));
 		}
 		return tempInt;
 	}
@@ -723,18 +757,22 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		handleSavedPreferences(false, outState);
-		savedInstanceState = null;
+		if (mOnCreateFinished) {
+			handleSavedPreferences(false, outState);
+			savedInstanceState = null;
+		}
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		if (mOpenCvCameraView != null)
-			mOpenCvCameraView.disableView();
-		savedInstanceState = null;
-		handleSavedPreferences(false, PreferenceManager.getDefaultSharedPreferences(getApplicationContext())/*this.getPreferences(Context.MODE_PRIVATE)*/);
-		PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		if (mOnCreateFinished) {
+			if (mOpenCvCameraView != null)
+				mOpenCvCameraView.disableView();
+			savedInstanceState = null;
+			handleSavedPreferences(false, PreferenceManager.getDefaultSharedPreferences(getApplicationContext())/*this.getPreferences(Context.MODE_PRIVATE)*/);
+			PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		}
 	}
 
 	@Override
@@ -816,6 +854,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	private Boolean mThresholdGreenCheck = false;
 	private Boolean mThresholdBlueCheck = false;
 	private int mMaskBackgroundValue = 0;
+	private boolean mMaskBackgroundValueAfterMask;
 
 	private SeekBar initSeekBar(View view, int initValue, int indicatorId){
 		updateIndicatorValue(indicatorId,initValue);
@@ -940,11 +979,11 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId())
 		{
-			case R.id.preferences:
+			/*case R.id.preferences:
 				Intent intent = new Intent();
 				intent.setClassName(this, "imagemanipulations.zome.android.com.ThisSettingsActivity");
 				startActivity(intent);
-				return true;
+				return true;*/
 			default:
 				CondLog('i', "called onOptionsItemSelected; selected item: " + item);
 
@@ -1028,7 +1067,15 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				initSeekBar(seekbarsContainer.findViewById(R.id.seekBarBlue), mThresholdBlue, R.id.seekBarBlueValue);
 				initSeekBar(seekbarsContainer.findViewById(R.id.seekBarGreen), mThresholdGreen, R.id.seekBarGreenValue);
 				initSeekBar(seekbarsContainer.findViewById(R.id.seekBarRed), mThresholdRed, R.id.seekBarRedValue);
-				initSeekBar(seekbarsContainer.findViewById(R.id.seekBarMaskBackground), mMaskBackgroundValue, R.id.seekBarMaskBackgroundValue);
+				if (Build.VERSION.SDK_INT >= Build_VERSION_CODES_FOR_BACGROUND_SUBTRACT) {
+					View container = findViewById(R.id.mask_background_control);
+					if(container != null){
+						container.setVisibility(View.VISIBLE);
+						initSeekBar(seekbarsContainer.findViewById(R.id.seekBarMaskBackground), mMaskBackgroundValue, R.id.seekBarMaskBackgroundValue);
+					}
+				}
+				else
+					mMaskBackgroundValue = 0;
 				initTextControl(R.id.threshold_deep_control_value, String.valueOf(viewMode==VIEW_MODE_THRESHOLD_ZERO ? mThresholdIntegrationDeep : mThresholdSpotAccumulationWeight));
 				initTextControl(R.id.threshold_deep_control_less, null);
 				initTextControl(R.id.threshold_deep_control_more, null);
@@ -1427,27 +1474,36 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 					}
 					Mat mask = new Mat(rect.height, rect.width, CvType.CV_8U);
 					int thresholdChannelIndex = channelStruct[THRESHOLD_STRUCT_INDEX];
-					Imgproc.threshold(singleChannels.get(thresholdChannelIndex), mask, channelStruct[THRESHOLD_STRUCT_VALUE], 255, Imgproc.THRESH_TOZERO);
+					Imgproc.threshold(singleChannels.get(thresholdChannelIndex), mask, channelStruct[THRESHOLD_STRUCT_VALUE], 255.0, Imgproc.THRESH_BINARY);
 					Scalar mean;//to use when mMaskBackgroundValue > 0
-					double[] meanValue;
-					Mat dst = new Mat(mask.rows(),mask.cols(),mask.type());
+					double[] meanScalarValues;
+					int type = singleChannels.get(0).type();
+					int rows = mask.rows();
+					int cols = mask.cols();
+					Mat backGroundMask =  new Mat(rows, cols, type);
+					Mat dst = new Mat(rows, cols, type);
 					ArrayList<Mat> maskedChannels = new ArrayList<>(rgbaInnerWindow.channels());
 					for (int i = 0; singleChannels.size() > i; i++) {
 						if (mCheckBoxMaskDetectionChannel && i == thresholdChannelIndex) {
-							maskedChannels.add(i, new Mat(rect.height, rect.width, CvType.CV_8U, new Scalar(0, 0, 0, 0)));
+							maskedChannels.add(i, new Mat(rect.height, rect.width, CvType.CV_8U, new Scalar(0.0, 0.0, 0.0, 0.0)));
 						} else {
 							maskedChannels.add(i, new Mat(rect.height, rect.width, CvType.CV_8U));
-							if(mMaskBackgroundValue > 0) {//mask for the channels made, now check is background average level shall be subtracted
-								meanValue = (mean = Core.mean(singleChannels.get(i))).val;
-								meanValue[0] *= (mMaskBackgroundValue / 100.0);
-								mean.set(meanValue);
-								Core.subtract(singleChannels.get(i), mean, dst);
+							if(mMaskBackgroundValue > 0) {//mask for the channels. now check is background average level shall be subtracted
+								mean = mMaskBackgroundValueAfterMask ? Core.mean(singleChannels.get(i)) :Core.mean(singleChannels.get(i), mask) ;
+								meanScalarValues = mean.val;
+								if((meanScalarValues[0] *= (mMaskBackgroundValue / (100.0))) > 0.0 && meanScalarValues[0] < 255.0) {
+									Imgproc.threshold(singleChannels.get(i), backGroundMask, meanScalarValues[0], 255.0, Imgproc.THRESH_BINARY);
+									Core.subtract(singleChannels.get(i), mean, maskedChannels.get(i), mask, maskedChannels.get(i).depth());
+								}
+								else
+									singleChannels.get(i).copyTo(maskedChannels.get(i), mask);
 							}
 							else
-								dst = singleChannels.get(i);
-							dst.copyTo(maskedChannels.get(i), mask);
+								singleChannels.get(i).copyTo(maskedChannels.get(i), mask);
 						}
 					}
+					dst.release();
+					backGroundMask.release();
 					Core.merge(maskedChannels, rgbaInnerWindow);
 					//Imgproc.accumulateWeighted(rgbaInnerWindow, mLastThresholdWindowContent, weight);
 					synchronized (luckySpotsActivity.class) {
@@ -1483,10 +1539,9 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 		if(mCheckBoxHistogram)
 			drawHistogram(rgba);
 		if (mVideoRecordingOngoing) {
-			if (mStopVideoRecording){
-				mStopVideoRecording = false;
-				stopVideoRecording();
-			}else if(!mVideoRecordingPaused)
+			if (mStopVideoRecording)
+				stopVideoRecording();// to do stop on this thread
+			else if(!mVideoRecordingPaused)
 				recordVideoFrame(rgba);
 		}
 		if(mMakeSnapshot){
@@ -1717,6 +1772,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				zoomBar.setLayoutParams(params);
 				initGeneralCheckBox(R.id.checkBoxHistogram, mCheckBoxHistogram, generalOnCheckedChangeListener);
 				initGeneralCheckBox(R.id.checkBox_mask_selected_color, mCheckBoxMaskDetectionChannel, generalOnCheckedChangeListener);
+				initGeneralCheckBox(R.id.checkBox_subtract_background_after, mMaskBackgroundValueAfterMask, generalOnCheckedChangeListener);
 				updateIndicatorValue(R.id.text_zoom_value, mInFrameZoomValue);
 				setTextValueForCurrentResolution();
 			}
@@ -1724,10 +1780,13 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 		}
 	};
 	private void initGeneralCheckBox(int id, boolean initValue, CheckBox.OnCheckedChangeListener listener) {
-		CheckBox checkBox = (CheckBox) findViewById(id);
-		if (checkBox != null) {
-			checkBox.setChecked(initValue);
-			checkBox.setOnCheckedChangeListener(listener);
+		if(id != R.id.checkBox_subtract_background_after || Build.VERSION.SDK_INT >= Build_VERSION_CODES_FOR_BACGROUND_SUBTRACT) {
+			CheckBox checkBox = (CheckBox) findViewById(id);
+			if (checkBox != null) {
+				checkBox.setVisibility(View.VISIBLE);
+				checkBox.setChecked(initValue);
+				checkBox.setOnCheckedChangeListener(listener);
+			}
 		}
 	}
 	private final CheckBox.OnCheckedChangeListener generalOnCheckedChangeListener = new CheckBox.OnCheckedChangeListener() {
@@ -1837,7 +1896,6 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				hideOnScreenControls();
 				break;
 			case R.id.on_screen_controls_video_record:
-				playSound(MediaActionSound.START_VIDEO_RECORDING);
 				startVideoRecorder();
 				control.setVisibility(View.GONE);
 				other = findViewById(R.id.on_screen_controls_video_stop_group);
@@ -1848,7 +1906,6 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				updateFramesCount(true);
 				break;
 			case R.id.on_screen_controls_video_stop:
-				playSound(MediaActionSound.STOP_VIDEO_RECORDING);
 				control.setVisibility(View.VISIBLE);
 				other = findViewById(R.id.on_screen_controls_video_pause);
 				other.setVisibility(View.VISIBLE);
@@ -1860,7 +1917,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				other.setVisibility(View.VISIBLE);
 				hideOnScreenControls();
 				updateFramesCount(false);
-				mStopVideoRecording = true;
+				mStopVideoRecording = true;//to stop in different thread, otherwise crash
 				//stopVideoRecording();
 				break;
 			case R.id.on_screen_controls_video_pause:
@@ -1880,20 +1937,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				updateFramesCount(true);
 				break;
 			case R.id.on_screen_controls_image_view:
-				Intent intentBrowseFiles = new Intent(Intent.ACTION_VIEW);
-				intentBrowseFiles.setType("image/* video/*");
-				intentBrowseFiles.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
-				try{
-					startActivity(intentBrowseFiles);
-				}catch(RuntimeException e){
-					try{
-						intentBrowseFiles.setType("image/*");
-						startActivity(intentBrowseFiles);
-					}catch(RuntimeException e1){
-						CondLog('e', e1.getMessage());
-					}
-					CondLog('e', e.getMessage());
-				}
+				openGalleryActivity();
 				break;
 			//case R.id.threshold_mode_absolute:
 			case R.id.threshold_mode_area:
@@ -1906,7 +1950,26 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 			case R.id.checkBox_mask_selected_color:
 				mCheckBoxMaskDetectionChannel = isChecked == null ? !mCheckBoxMaskDetectionChannel : isChecked;
 				break;
+			case R.id.checkBox_subtract_background_after:
+				mMaskBackgroundValueAfterMask = isChecked == null ? !mMaskBackgroundValueAfterMask : isChecked;
+				break;
 		}
+	}
+	public void openGalleryActivity(){
+		Intent intentBrowseFiles = new Intent(Intent.ACTION_VIEW, Uri.parse("content://media/internal/images/media"));
+		intentBrowseFiles.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+		try{
+			startActivity(intentBrowseFiles);
+		}catch(RuntimeException e){
+			try{
+				intentBrowseFiles.setType("image/*");
+				startActivity(intentBrowseFiles);
+			}catch(RuntimeException e1){
+				CondLog('e', e1.getMessage());
+			}
+			CondLog('e', e.getMessage());
+		}
+
 	}
 	private Bitmap convertMatToBitmap(Mat srcMat) {
 		Bitmap bmp; // bmp is your Bitmap instance
@@ -1967,25 +2030,39 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 		if (!sd.exists())
 			success = sd.mkdirs();
 		if (success) {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
 			String currentDateandTime = sdf.format(new Date());
 			String fileName = prefix +(modifier!=null ? modifier+"_" : "") +currentDateandTime + "."+ ext;
 			dest = new File(sd, fileName);
 		}
 		return dest;
 	}
-	private void playSound(int soundId) {
+
+	public synchronized void playSound(int soundId) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			if(mSound == null) {
+				mSound = new MediaActionSound();
+				mSound.load(MediaActionSound.START_VIDEO_RECORDING);
+				mSound.load(MediaActionSound.STOP_VIDEO_RECORDING);
+				mSound.load(MediaActionSound.FOCUS_COMPLETE);
+				mSound.load(MediaActionSound.SHUTTER_CLICK);
+			}
+			switch(soundId) {
+				case MediaActionSound.FOCUS_COMPLETE:
+				case MediaActionSound.START_VIDEO_RECORDING:
+				case MediaActionSound.STOP_VIDEO_RECORDING:
+				case MediaActionSound.SHUTTER_CLICK:
+					mSound.play(soundId);
+					break;
+			}
+		}
+	}
+	/*private void playSound(int soundId) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			MediaActionSound sound = new MediaActionSound();
 			sound.play(soundId);
 		}
-		/*//alternative
-		SoundPool soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
-		int shutterSound = soundPool.load(this, R.raw.camera_click, 0);
-		///...and then to play the sound
-		soundPool.play(shutterSound, 1f, 1f, 0, 0, 1);//http://developer.android.com/reference/android/media/SoundPool.html for parameters.
-		*/
-	}
+	}*/
 	//DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
 	private ArrayAdapter<String> listFieldadApter;
 	private void setTextValueForCurrentResolution(){
@@ -1995,7 +2072,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				mCurrentResolution = resolutionToString(mOpenCvCameraView.getResolution());
 			}
 			List<Camera.Size> resolutions = mOpenCvCameraView.getResolutionList();
-			ArrayList<String> itemNames = new ArrayList<String>();
+			ArrayList<String> itemNames = new ArrayList<>();
 			String  size;
 			int selected = 0;
 			for( int i=0; resolutions.size()>i;i++) {
@@ -2004,7 +2081,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				if(size.equals(mCurrentResolution))
 					selected = i;
 			}
-			listFieldadApter=new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, itemNames);
+			listFieldadApter=new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, itemNames);
 			listField.setAdapter(listFieldadApter);
 			listField.setSelection(selected);
 			listField.setOnItemSelectedListener(spinnerOnItemSelected);
@@ -2067,7 +2144,22 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	}
 
 	public void closeApplication(View view) {
-		finish();
+		int code = view == null ? 0 : Integer.parseInt((String)view.getTag());
+		switch(code){
+			case 0:
+				Context context = getApplicationContext();
+				final Intent i = new Intent();
+				i.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+				i.addCategory(Intent.CATEGORY_DEFAULT);
+				i.setData(Uri.parse("package:" + context.getPackageName()));
+				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+				i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+				context.startActivity(i);
+				break;
+			default:
+				finish();
+		}
 	}
 
 	//////////////Video Recording////////
@@ -2103,6 +2195,7 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 
 	private void initVideoRecorder() {
 		CondLog('w', "initVideoRecorder");
+		avutil.av_log_set_level(avutil.AV_LOG_QUIET);
 		mRecordedVideoFramesCounter = 0;
 		// Recreated after frame size is set in surface change method
 		File videoFile = prepareNewFile(mDirectoryPathVideo, "video_", null, VIDEO_RECORDING_FORMAT);
@@ -2118,9 +2211,11 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 			// re-set in the surface changed method as well
 			recorder.setFrameRate(frameRate);
 			// Create audio recording thread
-			audioRecordRunnable = new AudioRecordRunnable();
-			audioThread = new Thread(audioRecordRunnable);
-			runAudioThread = true;
+			if(mAudioAccessGrunted) {
+				audioRecordRunnable = new AudioRecordRunnable();
+				audioThread = new Thread(audioRecordRunnable);
+				runAudioThread = true;
+			}
 		}
 	}
 	public void startVideoRecorder(){
@@ -2129,11 +2224,13 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 			stopVideoRecording();
 
 		initVideoRecorder();
+		playSound(MediaActionSound.START_VIDEO_RECORDING);
 		try {
 			recorder.start();
 			mStartRecordingTime = System.currentTimeMillis();
 			mVideoRecordingOngoing = true;
-			audioThread.start();
+			if(mAudioAccessGrunted)
+				audioThread.start();
 		} catch (FFmpegFrameRecorder.Exception e) {
 			e.printStackTrace();
 		}
@@ -2141,7 +2238,6 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 	public void stopVideoRecording() {
 		// This should stop the audio thread from running
 		mVideoRecordingPaused = true;
-		mStopVideoRecording = true;
 		mVideoRecordingOngoing = false;
 		runAudioThread = false;
 		if (recorder != null) {
@@ -2150,12 +2246,14 @@ public class luckySpotsActivity extends Activity implements CameraBridgeViewBase
 				recorder.stop();
 				recorder.release();
 				MediaScannerConnection.scanFile(getApplicationContext(), new String[]{mFFmpegUri}, null, scanCompleteListener);
+				playSound(MediaActionSound.STOP_VIDEO_RECORDING);
 			} catch (FFmpegFrameRecorder.Exception e) {
 				e.printStackTrace();
 			}
 			recorder = null;
 		}
-		mVideoRecordingPaused = false;
+		mVideoRecordingPaused = false;//restore pause flag
+		mStopVideoRecording = false;//restore stop flag
 	}
 
 	private void recordVideoFrame(Mat rgba){

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Lucky Spots</string>
-    <string name="please_close"><![CDATA[This application could not work if access to the camera is not granted. Please click OK to clise application, then open System Settings->apps and select application and change Permissions]]></string>
+    <string name="please_close"><![CDATA[This application could not work if access to the camera is not granted.
+Please click Close button to close application, or click Open System Settings and then select Permissions to allow use of Camera. There you could also change permissions to save snapshots and video on the
+external storage and use audio]]></string>
     <string name="OK">OK</string>
     <string name="histogram">Histogram</string>
     <string name="no_processing">No processing</string>
@@ -100,4 +102,9 @@ if such application registered on the device. By default, movies saved under \"v
     <string name="size_of_processing_window">Processing window size (10–100%)</string>
     <string name="background_weight_value">Weight of mean of background\'s brightness to be subtracted (0–100%)</string>
     <string name="frames_in_area_integration">Number of frames in Area integration (0–16)</string>
+    <string name="MASK_BACKGROUND_AFTER_MASK">MASK_BACKGROUND_AFTER_MASK</string>
+    <string name="calc_backgr_after_masking">calc. backgr. after masking</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="close_and_exit">Close and Exit</string>
+    <string name="open_gallery_activity">Inspect saved Screen Shots and Videos</string>
 </resources>

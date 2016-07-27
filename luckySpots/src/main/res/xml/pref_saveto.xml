@@ -19,10 +19,10 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="Saving video to:"/>
-    <Preference android:title="Inspect saved screen shots and videos">
+    <Preference android:title="@string/open_gallery_activity">
         <intent
             android:action="android.intent.action.VIEW"
-            android:mimeType="image/*"/>
+            android:data="content://media/internal/images/media"/>
     </Preference>
 
     <!-- A 'parent' preference, which enables/disables child preferences (below)
