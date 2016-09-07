@@ -3,17 +3,17 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="imagemanipulations.zome.android.com.ThisSettingsActivity$ModePreferenceFragment"
+        android:fragment="com.zome.android.imagemanipulations.ThisSettingsActivity$ModePreferenceFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/mode"/>
 
     <header
-        android:fragment="imagemanipulations.zome.android.com.ThisSettingsActivity$SaveToPreferenceFragment"
+        android:fragment="com.zome.android.imagemanipulations.ThisSettingsActivity$SaveToPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="@string/saving_to"/>
 
     <header
-        android:fragment="imagemanipulations.zome.android.com.ThisSettingsActivity$HelpAboutPreferenceFragment"
+        android:fragment="com.zome.android.imagemanipulations.ThisSettingsActivity$HelpAboutPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/help"/>
 

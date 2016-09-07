@@ -7,7 +7,7 @@
              android:layout_alignParentBottom="true"
              android:layout_alignParentRight="true"
              android:id="@+id/seekbars_frame"
-             tools:context="imagemanipulations.zome.android.com.luckySpotsActivity"><!--
+             tools:context="com.zome.android.imagemanipulations.luckySpotsActivity"><!--
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="imagemanipulations.zome.android.imagemanipuilations.zome.android.imagemanipuilations.zome.android.com.zome.android.imagemanipuilations.zome.android.imagemanipuilations.zome.android.com.ThresholdsActivity" -->
 <LinearLayout

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="imagemanipulations.zome.android.com"
+<manifest package="com.zome.android.imagemanipulations"
           xmlns:android="http://schemas.android.com/apk/res/android"
           android:versionCode="151"
           android:versionName="1.51"
@@ -65,7 +65,7 @@ uses-feature android:name="android.hardware.camera.front"/>
         <activity
             android:name=".ScreenSlideActivity" android:label="Help">
             <intent-filter>
-                <action android:name="imagemanipulations.zome.android.com.ScreenSlideActivity" />
+                <action android:name="com.zome.android.imagemanipulations.ScreenSlideActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

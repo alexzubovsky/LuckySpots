@@ -7,7 +7,7 @@
              android:layout_alignParentBottom="true"
              android:layout_alignParentRight="true"
              android:id="@+id/on_screen_controls_frame"
-             tools:context="imagemanipulations.zome.android.com.luckySpotsActivity">
+             tools:context="com.zome.android.imagemanipulations.luckySpotsActivity">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

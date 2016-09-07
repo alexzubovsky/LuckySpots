@@ -22,11 +22,11 @@
      </Preference-->
     <Preference android:title="@string/pref_title_help">
         <intent
-            android:action="imagemanipulations.zome.android.com.ScreenSlideActivity"
-            android:targetClass="imagemanipulations.zome.android.com.ScreenSlideActivity"/>
+            android:action="com.zome.android.imagemanipulations.ScreenSlideActivity"
+            android:targetClass="com.zome.android.imagemanipulations.ScreenSlideActivity"/>
         <!--intent android:action="android.settings.SYNC_SETTINGS"/-->
     </Preference>
-    <imagemanipulations.zome.android.com.VersionPreference
+    <com.zome.android.imagemanipulations.VersionPreference
         android:title="Version">
-    </imagemanipulations.zome.android.com.VersionPreference>
+    </com.zome.android.imagemanipulations.VersionPreference>
 </PreferenceScreen>

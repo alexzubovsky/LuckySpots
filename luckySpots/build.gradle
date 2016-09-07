@@ -10,9 +10,9 @@ android {
         }
     }
     compileSdkVersion 24
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
     defaultConfig {
-        applicationId "imagemanipuilations.zome.android.com"
+        applicationId "com.zome.android.imagemanipuilations"
         minSdkVersion 15
         targetSdkVersion 23
         signingConfig signingConfigs.config
@@ -36,8 +36,8 @@ repositories {
 }
 dependencies {
     compile project(':openCVLibrary310')
-    compile 'com.android.support:support-v4:24.1.1'
-    compile 'com.android.support:support-v13:24.1.1'
+    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.android.support:support-v13:24.2.0'
     /*compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.1.0' + '-1.2.2'
     compile group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '3.0.2' + '-1.2.2'*/
     compile 'org.bytedeco:javacpp:1.2.2'

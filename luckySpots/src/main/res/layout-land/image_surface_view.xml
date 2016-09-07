@@ -3,10 +3,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/main_layout"
-                tools:context="imagemanipulations.zome.android.com.luckySpotsActivity">
+                tools:context="com.zome.android.imagemanipulations.luckySpotsActivity">
 
     <!--org.opencv.android.JavaCameraView-->
-    <imagemanipulations.zome.android.com.OpenCVJavaCameraViewExtension
+    <com.zome.android.imagemanipulations.OpenCVJavaCameraViewExtension
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:screenOrientation="landscape"
